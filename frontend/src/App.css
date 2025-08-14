@@ -1,0 +1,186 @@
+:root {
+  --primary-color: #0077c8; /* A vibrant blue from Sallie Mae's branding */
+  --secondary-color: #003f6a; /* A darker, professional blue */
+  --accent-color: #fdb913; /* A warm yellow accent */
+  --background-color: #f4f7f9;
+  --text-color: #333;
+  --card-background: #ffffff;
+  --border-color: #dde4e9;
+  --shadow-color: rgba(0, 0, 0, 0.05);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.App-header {
+  background-color: var(--card-background);
+  color: var(--secondary-color);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+.logo {
+  height: 40px;
+  margin-right: 1.5rem;
+}
+
+.App-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.App-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 3rem 1rem;
+}
+
+.form-container {
+  background: var(--card-background);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 30px var(--shadow-color);
+  width: 100%;
+  max-width: 550px;
+  border: 1px solid var(--border-color);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: white;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%208l5%205%205-5z%22%20fill%3D%22%236c757d%22/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.2em;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 119, 200, 0.2);
+}
+
+.calculate-btn {
+  width: 100%;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-top: 1rem;
+}
+
+.calculate-btn:hover:not(:disabled) {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.calculate-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.calculate-btn:disabled {
+  background-color: #b0c4de; /* A lighter, disabled blue */
+  cursor: not-allowed;
+  transform: none;
+}
+
+.results {
+  margin-top: 2rem;
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border-radius: 12px;
+}
+
+.results h2 {
+  color: white;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.prediction-value {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0.5rem 0;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+}
+
+.error-message {
+  margin-top: 1rem;
+  padding: 12px 16px;
+  background-color: #fff2f2;
+  border: 1px solid #ffcccc;
+  border-radius: 6px;
+  color: #c53030;
+  font-weight: 500;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .App-header {
+    padding: 1rem;
+  }
+  .App-header h1 {
+    font-size: 1.25rem;
+  }
+  .logo {
+    height: 30px;
+    margin-right: 1rem;
+  }
+  .form-container {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  .prediction-value {
+    font-size: 2.75rem;
+  }
+}
