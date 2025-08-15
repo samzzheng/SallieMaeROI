@@ -16,18 +16,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-encoder = None
-model = None
+pipeline = None
 
 @app.on_event("startup")
 async def load_models():
-    global encoder, model
+    global pipeline
     try:
-        encoder = joblib.load("model/encoder.joblib")
-        model = joblib.load("model/xgb_model.joblib")
-        print("Models loaded successfully")
+        pipeline = joblib.load("model/earnings_model_pipeline.joblib")
+        print("Pipeline loaded successfully")
     except Exception as e:
-        print(f"Error loading models: {e}")
+        print(f"Error loading pipeline: {e}")
         raise e
 
 class PredictionRequest(BaseModel):
@@ -38,33 +36,59 @@ class PredictionRequest(BaseModel):
 
 class PredictionResponse(BaseModel):
     predicted_income: float
+    range_low: float
+    range_high: float
+    rmse: float
+    r_squared: float
 
 @app.post("/predict_roi", response_model=PredictionResponse)
 async def predict_roi(request: PredictionRequest):
     try:
-        if encoder is None or model is None:
-            print("ERROR: Models not loaded")
-            raise HTTPException(status_code=500, detail="Models not loaded")
+        if pipeline is None:
+            print("ERROR: Pipeline not loaded")
+            raise HTTPException(status_code=500, detail="Pipeline not loaded")
         
         print(f"Received request: {request}")
         
-        # Create input as list of lists (matching the notebook approach)
-        input_data = [[
-            request.degree_type,
-            request.major_field,
-            request.control_type,
-            request.state
-        ]]
+        # Map degree types to CREDLEV codes
+        degree_to_credlev = {
+            "Associate's Degree": "2",
+            "Bachelor's Degree": "3", 
+            "Doctoral Degree": "5",
+            "First Professional Degree": "6",
+            "Master's Degree": "7"
+        }
         
-        print(f"Input data: {input_data}")
+        # Create input DataFrame with exact column names expected by updated model
+        input_df = pd.DataFrame({
+            'CREDLEV': [degree_to_credlev.get(request.degree_type, "3")],  # Default to Bachelor's
+            'CREDLEV_LABEL': [request.degree_type],
+            'CIPDESC': [request.major_field],
+            'CONTROL': [request.control_type],
+            'STABBR': [request.state]
+        })
         
-        encoded_data = encoder.transform(input_data)
-        print(f"Encoded data shape: {encoded_data.shape}")
+        print(f"Input DataFrame: {input_df}")
         
-        prediction = model.predict(encoded_data)[0]
+        # Pipeline handles encoding and prediction
+        prediction = pipeline.predict(input_df)[0]
         print(f"Prediction: {prediction}")
         
-        return PredictionResponse(predicted_income=float(prediction))
+        # Model performance metrics from training
+        rmse = 9247.17
+        r_squared = 0.5706
+        
+        # Calculate prediction range using RMSE (±1 standard deviation equivalent)
+        range_low = max(0, prediction - rmse)  # Ensure non-negative
+        range_high = prediction + rmse
+        
+        return PredictionResponse(
+            predicted_income=float(prediction),
+            range_low=float(range_low),
+            range_high=float(range_high),
+            rmse=float(rmse),
+            r_squared=float(r_squared)
+        )
     
     except Exception as e:
         print(f"ERROR in predict_roi: {str(e)}")

@@ -133,26 +133,56 @@ body {
   margin-top: 2rem;
   text-align: center;
   padding: 2rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
+  background: #f8f9fa;
+  color: var(--text-color);
   border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px var(--shadow-color);
 }
 
 .results h2 {
-  color: white;
+  color: var(--secondary-color);
   margin-bottom: 1rem;
   font-size: 1.2rem;
-  font-weight: 400;
-  opacity: 0.9;
+  font-weight: 500;
 }
 
 .prediction-value {
   font-size: 3.5rem;
   font-weight: 700;
-  color: white;
-  margin: 0.5rem 0;
-  text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+  color: var(--primary-color);
+  margin: 0.5rem 0 1.5rem 0;
 }
+
+.prediction-range {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: rgba(0, 119, 200, 0.05);
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(0, 119, 200, 0.1);
+}
+
+.prediction-range h3 {
+  color: var(--secondary-color);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.range-values {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+}
+
+.range-explanation {
+  font-size: 0.9rem;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
 
 .error-message {
   margin-top: 1rem;
@@ -182,5 +212,8 @@ body {
   }
   .prediction-value {
     font-size: 2.75rem;
+  }
+  .range-values {
+    font-size: 1.5rem;
   }
 }
