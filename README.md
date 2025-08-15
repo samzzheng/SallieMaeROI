@@ -9,18 +9,13 @@ A React frontend and FastAPI backend application that predicts median income 10 
 
 ## Setup
 
-1. **Place the model files** in the `model/` directory:
-   ```
-   mkdir model
-   # Copy your encoder.joblib and xgb_model.joblib files to the model/ directory
-   ```
 
-2. **Build and run the application**:
+1. **Build and run the application**:
    ```bash
    docker-compose up --build
    ```
 
-3. **Access the application**:
+2. **Access the application**:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
    - API Documentation: http://localhost:8000/docs
@@ -49,7 +44,6 @@ A React frontend and FastAPI backend application that predicts median income 10 
 
 ## Features
 
-- Professional UI with Sallie Mae branding (#003764 blue)
 - Four required dropdown selections:
   - Degree Type (Associate, Bachelor, Certificates)
   - Major Field (40+ options from Agriculture to Visual Arts)

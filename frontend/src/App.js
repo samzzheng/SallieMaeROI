@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
@@ -6,11 +6,35 @@ function App() {
     degree_type: '',
     major_field: '',
     control_type: '',
-    state: ''
+    state: '',
+    institution_name: ''
   });
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [analysis, setAnalysis] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState('');
+  const [universities, setUniversities] = useState([]);
+  const [universitiesLoading, setUniversitiesLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        const response = await fetch('https://salliemaeroi-service-119605585430.us-central1.run.app/get_universities');
+        if (response.ok) {
+          const data = await response.json();
+          setUniversities(data.universities);
+        }
+      } catch (error) {
+        console.error('Error fetching universities:', error);
+      } finally {
+        setUniversitiesLoading(false);
+      }
+    };
+
+    fetchUniversities();
+  }, []);
 
   const degreeTypes = [
     "Associate's Degree",
@@ -383,6 +407,8 @@ function App() {
     }));
     setError('');
     setPrediction(null);
+    setAnalysis(null);
+    setAnalysisError('');
   };
 
   const isFormValid = () => {
@@ -406,7 +432,7 @@ function App() {
     setPrediction(null);
 
     try {
-            const response = await fetch('/predict_roi', {
+            const response = await fetch('https://salliemaeroi-service-119605585430.us-central1.run.app/predict_roi', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -425,6 +451,52 @@ function App() {
       console.error('Prediction error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getAIAnalysis = async () => {
+    if (!prediction) return;
+
+    setAnalysisLoading(true);
+    setAnalysisError('');
+
+    try {
+      const analysisData = {
+        degree_type: formData.degree_type,
+        major_field: formData.major_field,
+        control_type: formData.control_type,
+        state: formData.state,
+        institution_name: formData.institution_name,
+        predicted_income: prediction.predicted_income,
+        range_low: prediction.range_low,
+        range_high: prediction.range_high,
+        annual_cost: prediction.annual_cost,
+        total_loan_amount: prediction.total_loan_amount,
+        monthly_payment: prediction.monthly_payment,
+        total_interest_paid: prediction.total_interest_paid,
+        roi_percentage: prediction.roi_percentage,
+        years_to_break_even: prediction.years_to_break_even
+      };
+
+      const response = await fetch('https://salliemaeroi-service-119605585430.us-central1.run.app/get_roi_analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(analysisData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAnalysis(data.analysis);
+    } catch (err) {
+      setAnalysisError('Failed to generate AI analysis. Please try again.');
+      console.error('Analysis error:', err);
+    } finally {
+      setAnalysisLoading(false);
     }
   };
 
@@ -510,13 +582,46 @@ function App() {
               </select>
             </div>
 
+            <div className="form-group">
+              <label htmlFor="institution_name">Institution:</label>
+              <select
+                id="institution_name"
+                name="institution_name"
+                value={formData.institution_name}
+                onChange={handleInputChange}
+                required
+                disabled={universitiesLoading}
+              >
+                <option value="">
+                  {universitiesLoading ? "Loading universities..." : "Select Institution"}
+                </option>
+                {universities.map(university => (
+                  <option key={university} value={university}>
+                    {university}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button 
               type="submit" 
               className="calculate-btn"
               disabled={!isFormValid() || loading}
             >
-              {loading ? 'Calculating...' : 'Calculate ROI'}
+              {loading ? (
+                <>
+                  <span className="loading-spinner"></span>
+                  Calculating...
+                </>
+              ) : 'Calculate ROI'}
             </button>
+
+          {loading && (
+            <div className="loading-text">
+              <span className="loading-spinner"></span>
+              Analyzing your education investment...
+            </div>
+          )}
           </form>
 
           {error && (
@@ -527,20 +632,102 @@ function App() {
 
           {prediction !== null && (
             <div className="results">
-              <h2>Predicted Median Income:</h2>
-              <div className="prediction-value">
-                {formatCurrency(prediction.predicted_income)}
+              <div className="results-header">
+                <h2>Investment Analysis</h2>
+                <h3 className="institution-name">{formData.institution_name}</h3>
               </div>
               
-              <div className="prediction-range">
-                <h3>Typical Range:</h3>
-                <div className="range-values">
-                  {formatCurrency(prediction.range_low)} - {formatCurrency(prediction.range_high)}
+              <div className="results-grid">
+                <div className="result-card">
+                  <h4>🎓 Education Costs</h4>
+                  <div className="metric-row">
+                    <span className="metric-label">Annual Cost</span>
+                    <span className="metric-value">{formatCurrency(prediction.annual_cost)}</span>
+                  </div>
+                  <div className="metric-row">
+                    <span className="metric-label">Total Investment</span>
+                    <span className="metric-value large">{formatCurrency(prediction.total_loan_amount)}</span>
+                  </div>
                 </div>
-                <div className="range-explanation">
-                  This range accounts for natural variation in earnings outcomes. 
-                  Most graduates with similar backgrounds earn within this range.
+
+                <div className="result-card">
+                  <h4>💰 Student Loan Details</h4>
+                  <div className="loan-terms">10.5% Average Market APR • 10 Years</div>
+                  <div className="metric-row">
+                    <span className="metric-label">Monthly Payment</span>
+                    <span className="metric-value">{formatCurrency(prediction.monthly_payment)}</span>
+                  </div>
+                  <div className="metric-row">
+                    <span className="metric-label">Total Interest</span>
+                    <span className="metric-value">{formatCurrency(prediction.total_interest_paid)}</span>
+                  </div>
                 </div>
+
+                <div className="result-card">
+                  <h4>📊 Return on Investment</h4>
+                  <div className="roi-value">
+                    {prediction.roi_percentage > 0 ? '+' : ''}{prediction.roi_percentage.toFixed(1)}%
+                    <span className="roi-period">(10-Year ROI)</span>
+                  </div>
+                  <div className="metric-row">
+                    <span className="metric-label">Break-even Point</span>
+                    <span className="metric-value">{prediction.years_to_break_even.toFixed(1)} years</span>
+                  </div>
+                </div>
+
+                <div className="result-card">
+                  <h4>💼 Income Projection</h4>
+                  <div className="income-main">
+                    {formatCurrency(prediction.predicted_income)}
+                    <span className="income-period">per year</span>
+                  </div>
+                  <div className="income-range">
+                    <span className="range-label">Expected Range:</span>
+                    <span className="range-values">
+                      {formatCurrency(prediction.range_low)} - {formatCurrency(prediction.range_high)}
+                    </span>
+                  </div>
+                  <div className="range-note">
+                    Range reflects natural variation in earnings outcomes for similar graduates.
+                  </div>
+                </div>
+              </div>
+
+              <div className="ai-analysis-section">
+                <button 
+                  onClick={getAIAnalysis}
+                  className="ai-analysis-btn"
+                  disabled={analysisLoading}
+                >
+                  {analysisLoading ? (
+                    <>
+                      <span className="loading-spinner"></span>
+                      Generating AI Analysis...
+                    </>
+                  ) : 'Get AI Analysis'}
+                </button>
+
+                {analysisLoading && (
+                  <div className="loading-text">
+                    <span className="loading-spinner"></span>
+                    AI is analyzing your education ROI prediction...
+                  </div>
+                )}
+
+                {analysisError && (
+                  <div className="analysis-error">
+                    {analysisError}
+                  </div>
+                )}
+
+                {analysis && (
+                  <div className="ai-analysis">
+                    <h3>💡 AI Insights</h3>
+                    <div className="analysis-content">
+                      {analysis}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
